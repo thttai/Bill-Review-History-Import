@@ -1,0 +1,89 @@
+FieldName,Length,Attribute,Usage,StartByte,EndByte
+Bill ID Date,8,DT,"Calendar Date of the Bill ID, or the date the bill was first entered and reviewed",1,8
+Date of Service,8,DT,No description available,9,16
+Procedure Code or Service Code,17,AN,"Valid CPT, NDC, or Fee Schedule code",17,33
+Modifier 1,2,AN,Valid modifier for state and type.,34,35
+Modifier 2,2,AN,Valid modifier for state and type.,36,37
+POS,4,DV,Place of Service code.  See Appendix I,38,41
+TOS,4,DV,Type of Service code.  See Appendix II,42,45
+Anesthesia Time,3,N3,Anesthesia time converted to units,46,48
+Anesthesia Minutes,3,N3,Anesthesia time in total minutes,49,51
+Number Done,3,N3,Quantity of service,52,54
+Charges,12,SN9.2,Provider's charge for service,55,66
+Review Reductions,12,SN9.2,,67,78
+Undercharges,12,SN9.2,,79,90
+Taxes,12,SN9.2,,91,102
+Penalties,12,SN9.2,No description available,103,114
+Discounts,12,SN9.2,,115,126
+Deductible,12,SN9.2,No description available,127,138
+Co-Pay,12,SN9.2,No description available,139,150
+Claim ID,30,AN,No description available,241,270
+Claimant Last Name,30,AN,No description available,271,300
+Claimant First Name,20,AN,No description available,301,320
+Claimant MI,1,AN,No description available,321,321
+Claimant SSN,11,AN,Claimant Social Security Number,322,332
+Claimant Date of Injury,8,DT,No description available,333,340
+Claimant Date of Birth,8,DT,No description available,341,348
+Claimant Gender,1,DV,"M - Male, F - Female, U - Unknown",349,349
+Adjustor ID,10,AN,Adjustor Identifier,350,359
+Bill ID,22,AN,"System Assigned Bill Review Identifier, Format: {CCYYMMDDHHmmSShh}{User}{Suffix}",360,381
+ICD9 code 1,6,DV,First Valid ICD-9 code,382,387
+ICD9 code 2,6,DV,Second Valid ICD-9 code,388,393
+ICD9 code 3,6,DV,Third Valid ICD9-9 code,394,399
+ICD9 code 4,6,DV,Fourth Valid ICD-9 code,400,405
+PPO ID,10,AN,PPO Vendor Identifier,406,415
+Date Billed,8,DT,Date provider submitted medical billing,416,423
+Date Received 1,8,DT,Date customer received medical billing,424,431
+Date Received 2,8,DT,No description available,432,439
+Date Received 3,8,DT,No description available,440,447
+Date Paid,8,DT,Date of payment,448,455
+Payment Kind Code,10,AN,Pay Kind Code for billing,456,465
+Provider ID,18,AN,No description available,466,483
+Provider Tax ID,11,AN,No description available,484,494
+Provider Last Name,30,AN,No description available,495,524
+Provider First Name,20,AN,No description available,525,544
+Provider MI,1,AN,No description available,545,545
+Provider Address 1,30,AN,No description available,546,575
+Provider Address 2,30,AN,No description available,576,605
+Provider City,20,AN,No description available,606,625
+Provider State,2,DV,No description available,626,627
+Provider Zip Code,10,AN,No description available,628,637
+Provider Type,2,DV,Valid Medata System defined Provider Type.  See Appendix III,638,639
+Provider Specialty,2,DV,Valid Medata System defined Provider Specialty.  See Appendix IV,640,641
+Client ID,20,AN,Client Identification,642,661
+Client Name,30,AN,No description available,662,691
+Client Address 1,30,AN,No description available,692,721
+Client Address 2,30,AN,No description available,722,751
+Client City,20,AN,No description available,752,771
+Client State,2,DV,No description available,772,773
+Client Zip Code,10,AN,No description available,774,783
+Bill ID Sequence ID,6,N6,Sequential number for each detail line,2196,2201
+Insured Corporation ID,20,AN,,784,803
+Insured Corp Name,30,AN,,804,833
+Insured Corp Address 1,30,AN,,834,863
+Insured Corp Address 2,30,AN,,864,893
+Insured Corp City,20,AN,,894,913
+Insured Corp State,2,DV,,914,915
+Insured Corp Zip Code,10,AN,,916,925
+BOS Date,8,DT,"Claimant's Beginning Date of Service",2242,2249
+EOS Date,8,DT,"Claimant's Ending Date of Service",2250,2257
+Procedure Code or Service Code,17,AN,"Valid CPT NDC or Fee Schedule code",017,033
+Recommended Allowance,12,SN9.2,,151,162
+PPO Reduction,12,SN9.2,,229,240
+Original Procedure Code,17,AN,"Original submitted procedure code",2361,2377
+UB Revenue Code,4,DV,"Hospital's UB Revenue Code",2735,2738
+Customer Line Number,10,N10,"Medata Customer's Detail Line Number corresponding to 'Medata Customer's Bill ID'   in position 2331 above.",2520,2529
+State Code1,4,DV,"Review State specific reason code. Medata RC1 translated into State Code1.",2779,2782
+State Code2,4,DV,"Review State specific reason code. Medata RC2 translated into State Code2.",2783,2786
+State Code3,4,DV,"Review State specific reason code. Medata RC3 translated into State Code3.",2787,2790
+State Code4,4,DV,"Review State specific reason code. Medata RC4 translated into State Code4.",2791,2794
+State Code5,4,DV,"Review State specific reason code. Medata RC5 translated into State Code5.",2795,2798
+State Code6,4,DV,"Review State specific reason code. Medata RC6 translated into State Code6.",2799,2802
+Review State Claim,2,DV,"Valid 2 character Postal State code (i.e. CA) presently set in bill review's Claim.",927,928
+Adjustment Reason Code,3,DV,"derived from customer's Adjustment Reason Code file utilized at time of performing Adjust A Bill",1737,1739
+DRG Code,3,N3,"DRG Code used in reviewing Hospital bill",1740,1742
+Admission Date,8,DT,"Claimant's Admission Date (Hospital bills)",2234,2241
+Bill Type Code,3,DV,"Valid Bill Type code.  See Appendix VI",2258,2260
+IPOP Flag,2,DV,"IP - Inpatient billing OP - Outpatient billing {space filled} - non-facility billing",1163,1164
+Discharge Status,2,DV,"Valid Hospital Discharge Status code.",2262,2263
+Patient Account ID,20,AN,"Provider's patient account identifier",2315,2334
