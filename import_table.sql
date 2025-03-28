@@ -22,6 +22,27 @@ FROM [DataQA].[QA_INTM_ReviewWare].[dbo].[claim];
 -- debug
 select * from [claim];
 
+-- To clone a view from the local database to a remote database
+
+-- Step 1: Drop the table if it exists on the remote server
+IF EXISTS (SELECT * FROM [DataQA].[QA_INTM_Temp4Dts].[dbo].sys.tables 
+           WHERE name = 'Medata_LAWA_BIG_EXTRACT_20170401_20250228')
+BEGIN
+    EXEC [DataQA].[QA_INTM_Temp4Dts].[dbo].sp_executesql 
+        N'DROP TABLE [Medata_LAWA_BIG_EXTRACT_20170401_20250228]'
+END
+
+-- Step 2: Create a table on the remote server and copy data from the local view
+EXEC [DataQA].[QA_INTM_Temp4Dts].[dbo].sp_executesql 
+    N'CREATE TABLE [Medata_LAWA_BIG_EXTRACT_20170401_20250228] 
+      AS 
+      SELECT * FROM OPENQUERY(LocalServerName, ''SELECT * FROM [dbo].[Medata_LAWA_BIG_EXTRACT_20170401_20250228]'')'
+
+-- Step 3: Verify the data was copied
+SELECT TOP 10 * 
+FROM [DataQA].[QA_INTM_Temp4Dts].[dbo].[Medata_LAWA_BIG_EXTRACT_20170401_20250228]
+
+
 -- create function on db
 --create Function [dbo].[fnGet2csProviderTaxIdExt](@TaxId varchar(9), @EdiSourceCode varchar(10))
 --returns varchar(4)
