@@ -12,7 +12,7 @@ select count(*) from Medata_LAWA_BIG_EXTRACT_20170401_20250228;
 -- drop view
 --if OBJECT_ID('[viewMedataSiaLwpBillDetail]') > 0 drop view [viewMedataSiaLwpBillDetail]; 
 
-
+GO
 CREATE View [dbo].[viewMedataSiaLwpBillDetail] as
 select --top 100
     DateofService        =    case when isdate(DateofService) = 1 then convert(datetime,DateofService)    else null end
@@ -40,7 +40,7 @@ select --top 100
 from
     Medata_LAWA_BIG_EXTRACT_20170401_20250228
 
-
+GO
 CREATE View [dbo].[viewMedataSiaLwpBillHeader] as (
 Select distinct --top 10
     BillDateInserted    =    convert(Datetime,BillIDDate)
@@ -166,34 +166,34 @@ where t.ClaimID is null
 ------------------
 -- SYNCH PROVIDER
 ------------------
----- debug local, create CorvelProvider in local DB
---IF OBJECT_ID('dbo.CorvelProvider', 'U') IS NOT NULL
---    DROP TABLE dbo.CorvelProvider;
 
---CREATE TABLE dbo.CorvelProvider (
---    ID INT IDENTITY PRIMARY KEY,      -- Unique identifier
---    TaxId VARCHAR(11),
---    ProviderName VARCHAR(100),
---    LastName VARCHAR(30),
---    FirstName VARCHAR(20),
---    PracticeAddress VARCHAR(100),
---	PracticeAddress2 VARCHAR(100),
---	PracticeCity VARCHAR(100),
---	PracticeState VARCHAR(100),
---	PracticeZip VARCHAR(100),
---	BrPostFixTaxId VARCHAR(100),
---	IsNew INT DEFAULT 1,
---);
+-- check to create CorvelProvider
+if OBJECT_ID('dbo.CorvelProvider', 'U') IS NULL
+begin
+create table CorvelProvider (
+    ID INT IDENTITY PRIMARY KEY,      -- Unique identifier
+    TaxId VARCHAR(11),
+    ProviderName VARCHAR(100),
+    LastName VARCHAR(30),
+    FirstName VARCHAR(20),
+    PracticeAddress VARCHAR(100),
+	PracticeAddress2 VARCHAR(100),
+	PracticeCity VARCHAR(100),
+	PracticeState VARCHAR(100),
+	PracticeZip VARCHAR(100),
+	BrPostFixTaxId VARCHAR(100),
+	IsNew INT DEFAULT 1,
+);
+end
 
----- Create index after table creation
---CREATE INDEX IX1_CorvelProvider 
---ON dbo.CorvelProvider (ProviderName, PracticeAddress, TaxId);
+-- Create index after table creation
+CREATE INDEX IX1_CorvelProvider 
+ON dbo.CorvelProvider (ProviderName, PracticeAddress, TaxId);
 
+-- debug
+select top 10 * from CorvelProvider
 
-----debug
---select * from CorvelProvider
-
--- 
+-- insert into CorvelProvider
 begin transaction
 insert into CorvelProvider
 (ProviderName, PracticeAddress, PracticeAddress2,
