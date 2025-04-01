@@ -12,7 +12,7 @@ Note =
 'BillType: ' + isnull(convert(varchar,[Bill_Type_Code], 101), '') + '
 PPO Network: ' + isnull([PPO_ID], '') 
 From
-	SJHeader where ISNULL(missingdata,0) = 0				
+	TempBillHeader where ISNULL(missingdata,0) = 0				
 	and claimbillid in (select id from [QA_INTM_ReviewWare]..claim_bill)
 )
 insert into [QA_INTM_ReviewWare]..Claim_Bill_Note (ID, Date, Claim_Bill_ID, IsLocked, Notes, UUID)
@@ -45,12 +45,12 @@ select * from vwSJHeaderDetail;
 
 select 
 Claim_Number, Claimant_Name, Review_Number, SSN, DateOfBirth, Injury_Date, Charge, Allowance, ICD9Code, BillTypeCode, FirstDateofService, LastDateofService, InsurerRecDate, DateOfBill, DateCorVelRecBill, DateCorVelEnteredBill, ReferringPhysicianName, TaxID, Provider_Name, Billing_Provider_Address1, PracticeCity, PracticeState, Billing_Provider_Zip
-from SJHeader where missingdata=1
+from TempBillHeader where missingdata=1
 
 
 
 
 -- ARCHIVE IMPORTED TABLE
 
-select * into SJHeader_History from SJHeader
-select * into SJDetail_History from SJDetail
+select * into SJHeader_History from TempBillHeader
+select * into SJDetail_History from TempBillDetail

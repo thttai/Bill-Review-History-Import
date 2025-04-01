@@ -2,12 +2,12 @@
 -- START SYNCH the BILL DATA
 -- =======================================
 -- BATCH
-select * from [QA_INTM_ReviewWare]..batch where ID < 0
+select id, Client_ID, Employer_ID,  Status, Document_Reference from [QA_INTM_ReviewWare]..batch where ID < 0
 select * from [QA_INTM_ReviewWare]..Client where EDI_Filter_Source_Code like 'INTMINTC'  
 
 set identity_insert [QA_INTM_ReviewWare]..BATCH ON;
 Insert into [QA_INTM_ReviewWare]..BATCH (id, Client_ID, Employer_ID,  Status, Document_Reference)
-Select -24, 3, null, 99, 'San J External history' where not exists (select * from [QA_INTM_ReviewWare]..batch where ID = -24)
+Select -18, 3, null, 99, 'San J External history' where not exists (select * from [QA_INTM_ReviewWare]..batch where ID = -18)
 set identity_insert [QA_INTM_ReviewWare]..BATCH OFF;
 
 
@@ -51,7 +51,7 @@ Provider_Patient_Account_Number
 )
 Select 
 	ClaimBillId,
-	-24 as  BATCHID,
+	-18 as  BATCHID,
 	BillNumber = /*'AR' +*/ [Bill_ID] + '-01',
 	ClaimId,
 	ClientRecvdDate = /*null*/[ClientRecievedDate],
@@ -88,7 +88,7 @@ Select
 	Patient_Account = null
 --into _Temp
 From
-	SJHeader b					
+	TempBillHeader b					
 where ISNULL(missingData,0) = 0
 and b.claimbillid not in (select id from [QA_INTM_ReviewWare]..claim_Bill cb)
 and /*'AR' +*/ [Bill_ID] + '-01' not in (select accountnumber from [QA_INTM_ReviewWare]..claim_bill where accountnumber like 'GSRMA%')

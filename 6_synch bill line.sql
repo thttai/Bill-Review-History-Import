@@ -56,7 +56,7 @@ select
 	,left(bl.[ICD9_code_1] ,10)
 	,DaysSupplied = null
 	,convert(money,bl.[PPOSavings])
-From SJDetail bl
+From TempBillDetail bl
 Join
 	SJHeader b on b.[Bill_ID] = bl.[Bill_ID]  and isnull(missingdata,0)=0
 where ISNULL(missingData,0) = 0
