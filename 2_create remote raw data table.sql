@@ -1,104 +1,85 @@
 USE [QA_INTM_Temp4Dts]
 GO
 
-/****** Object:  Table [dbo].[intmco_paycode]    Script Date: 3/28/2025 3:24:29 PM ******/
-SET ANSI_NULLS ON
+-- select count(*) from Medata_EXTRACT;
+
+-- drop view
+--if OBJECT_ID('[viewMedataSiaLwpBillDetail]') > 0 drop view [viewMedataSiaLwpBillDetail]; 
+
 GO
+CREATE View [dbo].[viewMedataSiaLwpBillDetail] as
+select --top 100
+    DateofService        =    case when isdate(DateofService) = 1 then convert(datetime,DateofService)    else null end
+    ,CptCode            =    left(replace(ProcedureCodeorServiceCode,'-',''),11)
+    ,Modifier1            =    case when Modifier1 = '00' then null else Modifier1 end
+    ,Modifier2            =    case when Modifier2 = '00' then null else Modifier2 end
 
-SET QUOTED_IDENTIFIER ON
+    ,PlaceOfService    =    rtrim(POS)
+    ,Units                    =    NumberDone
+    ,Charges
+    ,ReviewReductions
+    ,Allowed    =    RecommendedAllowance
+    ,PPODiscount        =    PPOReduction
+    ,Billed_Code        =    replace(OriginalProcedureCode,'-','')
+    ,RevenueCode        =    UBRevenueCode
+    ,BillNumber        = left(BillID,16)
+    ,ClaimNumber        =    rtrim(ClaimID)
+    ,Line_Sequence_no    =    convert(bigint,CustomerLineNumber)
+    ,BillIDSequenceID = BillIDSequenceID
+    ,ReviewReductionCode01 = TRIM(ReviewReductionCode01)
+    ,StateCode = Case When StateCode1 like '00%' then '' else RTRIM(STateCode1) end
+    + Case When StateCode2 like '00%' then '' else ',' + RTRIM(STateCode2) end
+    + Case When StateCode3 like '00%' then '' else ',' + RTRIM(STateCode3) end
+    + Case When StateCode4 like '00%' then '' else ',' + RTRIM(STateCode4) end
+    + Case When StateCode5 like '00%' then '' else ',' + RTRIM(StateCode5) end
+    + Case When StateCode6 like '00%' then '' else ',' + RTRIM(StateCode6) end
+--into MedDataBillDetail    
+from
+    Medata_EXTRACT
+
+--if OBJECT_ID('[viewMedataSiaLwpBillHeader]') > 0 drop view [viewMedataSiaLwpBillHeader]; 
 GO
+CREATE View [dbo].[viewMedataSiaLwpBillHeader] as (
+Select distinct --top 10
+    BillDateInserted    =    convert(Datetime,BillIDDate)
 
-CREATE TABLE [dbo].[Medata_LAWA_BIG_EXTRACT_20170401_20250228](
-	[LineID] [int] NOT NULL,
-	[AdjustmentReasonCode] [nvarchar](max) NULL,
-	[AdjustorID] [nvarchar](max) NULL,
-	[AdmissionDate] [nvarchar](max) NULL,
-	[AnesthesiaMinutes] [nvarchar](max) NULL,
-	[AnesthesiaTime] [nvarchar](max) NULL,
-	[BillID] [nvarchar](max) NULL,
-	[BillIDDate] [nvarchar](max) NULL,
-	[BillIDSequenceID] [nvarchar](max) NULL,
-	[BillTypeCode] [nvarchar](max) NULL,
-	[BOSDate] [nvarchar](max) NULL,
-	[Charges] [nvarchar](max) NULL,
-	[ClaimID] [nvarchar](max) NULL,
-	[ClaimantDateofBirth] [nvarchar](max) NULL,
-	[ClaimantDateofInjury] [nvarchar](max) NULL,
-	[ClaimantFirstName] [nvarchar](max) NULL,
-	[ClaimantGender] [nvarchar](max) NULL,
-	[ClaimantLastName] [nvarchar](max) NULL,
-	[ClaimantMI] [nvarchar](max) NULL,
-	[ClaimantSSN] [nvarchar](max) NULL,
-	[ClientAddress1] [nvarchar](max) NULL,
-	[ClientAddress2] [nvarchar](max) NULL,
-	[ClientCity] [nvarchar](max) NULL,
-	[ClientID] [nvarchar](max) NULL,
-	[ClientName] [nvarchar](max) NULL,
-	[ClientState] [nvarchar](max) NULL,
-	[ClientZipCode] [nvarchar](max) NULL,
-	[CoPay] [nvarchar](max) NULL,
-	[CustomerLineNumber] [nvarchar](max) NULL,
-	[DateBilled] [nvarchar](max) NULL,
-	[DateofService] [nvarchar](max) NULL,
-	[DatePaid] [nvarchar](max) NULL,
-	[DateReceived1] [nvarchar](max) NULL,
-	[DateReceived2] [nvarchar](max) NULL,
-	[DateReceived3] [nvarchar](max) NULL,
-	[Deductible] [nvarchar](max) NULL,
-	[DischargeStatus] [nvarchar](max) NULL,
-	[Discounts] [nvarchar](max) NULL,
-	[DRGCode] [nvarchar](max) NULL,
-	[EOSDate] [nvarchar](max) NULL,
-	[ICD9code1] [nvarchar](max) NULL,
-	[ICD9code2] [nvarchar](max) NULL,
-	[ICD9code3] [nvarchar](max) NULL,
-	[ICD9code4] [nvarchar](max) NULL,
-	[InsuredCorpAddress1] [nvarchar](max) NULL,
-	[InsuredCorpAddress2] [nvarchar](max) NULL,
-	[InsuredCorpCity] [nvarchar](max) NULL,
-	[InsuredCorpName] [nvarchar](max) NULL,
-	[InsuredCorpState] [nvarchar](max) NULL,
-	[InsuredCorpZipCode] [nvarchar](max) NULL,
-	[InsuredCorporationID] [nvarchar](max) NULL,
-	[IPOPFlag] [nvarchar](max) NULL,
-	[Modifier1] [nvarchar](max) NULL,
-	[Modifier2] [nvarchar](max) NULL,
-	[NumberDone] [nvarchar](max) NULL,
-	[OriginalProcedureCode] [nvarchar](max) NULL,
-	[PatientAccountID] [nvarchar](max) NULL,
-	[PaymentKindCode] [nvarchar](max) NULL,
-	[Penalties] [nvarchar](max) NULL,
-	[POS] [nvarchar](max) NULL,
-	[PPOID] [nvarchar](max) NULL,
-	[PPOReduction] [nvarchar](max) NULL,
-	[ProcedureCodeorServiceCode] [nvarchar](max) NULL,
-	[ProcedureCodeorServiceCode2] [nvarchar](max) NULL,
-	[ProviderAddress1] [nvarchar](max) NULL,
-	[ProviderAddress2] [nvarchar](max) NULL,
-	[ProviderCity] [nvarchar](max) NULL,
-	[ProviderFirstName] [nvarchar](max) NULL,
-	[ProviderID] [nvarchar](max) NULL,
-	[ProviderLastName] [nvarchar](max) NULL,
-	[ProviderMI] [nvarchar](max) NULL,
-	[ProviderSpecialty] [nvarchar](max) NULL,
-	[ProviderState] [nvarchar](max) NULL,
-	[ProviderTaxID] [nvarchar](max) NULL,
-	[ProviderType] [nvarchar](max) NULL,
-	[ProviderZipCode] [nvarchar](max) NULL,
-	[RecommendedAllowance] [nvarchar](max) NULL,
-	[ReviewReductions] [nvarchar](max) NULL,
-	[ReviewStateClaim] [nvarchar](max) NULL,
-	[StateCode1] [nvarchar](max) NULL,
-	[StateCode2] [nvarchar](max) NULL,
-	[StateCode3] [nvarchar](max) NULL,
-	[StateCode4] [nvarchar](max) NULL,
-	[StateCode5] [nvarchar](max) NULL,
-	[StateCode6] [nvarchar](max) NULL,
-	[Taxes] [nvarchar](max) NULL,
-	[TOS] [nvarchar](max) NULL,
-	[UBRevenueCode] [nvarchar](max) NULL,
-	[Undercharges] [nvarchar](max) NULL
-) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
-GO
-
-
+    --,PlaceOfService    =    rtrim(POS)
+    
+    ,ClaimNumber        =    rtrim(ClaimID)
+    ,BillNumber        = left(BillID,16)
+    ,ICD9code1        = RTRIM(ICD9code1)
+    ,ICD9code2        = RTRIM(ICD9code2)
+    ,ICD9code3        = RTRIM(ICD9code3)
+    ,ICD9code4        = RTRIM(ICD9code4)
+    ,PpoNetwork        =    RTRIM(PPOID)
+    ,Provider_Bill_Date        = case when convert(int,datebilled) > 0 then convert(datetime,DateBilled)    else null end
+    ,BrReceivedDate            = case when convert(int,DateReceived1) > 0 then convert(datetime,DateReceived1)   else null end
+    ,ProviderCheckDate        = case when convert(int,DatePaid) > 0 then convert(datetime,DatePaid)   else null end
+    ,ProviderID
+    ,ProviderTaxID        =    REPLACE(ProviderTaxID,'-','')
+    ,ProviderLastName        = RTRIM(ProviderLastName)
+    ,ProviderFirstName        = RTRIM(ProviderFirstName)
+    ,ProviderMI        = RTRIM(ProviderMI)
+    ,ProviderAddress1        = RTRIM(ProviderAddress1)
+    ,ProviderAddress2        = RTRIM(ProviderAddress2)
+    ,ProviderCity        = RTRIM(ProviderCity)
+    ,ProviderState        = RTRIM(ProviderState)
+    ,ProviderZipCode    =    LEFT(ProviderZipCode, 5)
+    ,ReviewedState = RTRIM([ReviewStateClaim])
+    ,AdjustmentReasonCode    = case when AdjustmentReasonCode in ('000') then null else AdjustmentReasonCode end
+    ,UB92_Billed_DRG_No        = case when DRGCode in ('000') then null else DRGCode end    
+    ,UB92_Admit_Date        =    case when ISDATE(AdmissionDate) = 1 then convert(datetime,AdmissionDate) else null end
+    ,DateOfServiceFrom        =    case when ISDATE(BOSDate) = 1 then convert(datetime,BOSDate) else null end
+    ,DateOfServiceTo        =    case when ISDATE(EOSDate) = 1 then convert(datetime,EOSDate) else null end
+    ,BillTypeCode            =    BillTypeCode    -- select distinct BillTypeCode from meddatacwall
+    --,HospitalBillFlag            -- select distinct HospitalBillFlag from meddatacwall
+    ,FormType                =    case when [IPOPFlag] in ('IP', 'OP') then 'UB04' else 'HCFA' end
+    ,UB92_Discharge_Status    =    RTRIM(DischargeStatus)        -- select distinct DischargeStatus from meddatacwall
+    ,Provider_Patient_Account_Number    =    RTRIM(PatientAccountID)
+    ,ClaimantLastName
+    ,ClaimantFirstName
+    ,ClaimantDateofInjury = convert(datetime,ClaimantDateofInjury)
+    ,ClaimantDateofBirth = convert(datetime,ClaimantDateofBirth)
+From
+    Medata_EXTRACT
+)

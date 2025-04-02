@@ -26,8 +26,8 @@ Claim_ID,
 ClientRecvdDate,
 InsertedBy,
 DateInserted,
-TotalCharges,
-TotalAllowed,
+--TotalCharges, -- ??? missing data in TempBillHeader
+--TotalAllowed,
 DateOfServiceFrom,
 DateOfServiceTo,
 Provider_ID,
@@ -43,7 +43,7 @@ SourceProviderZip,
 SourceProviderTaxId,
 ProviderCheckNumber ,
 ProviderCheckDate ,
-ProviderCheckAmount ,
+--ProviderCheckAmount , -- ??? missing data
 AttachmentInfo ,
 Is_Duplicate ,
 ReviewedState,
@@ -52,46 +52,46 @@ Provider_Patient_Account_Number
 Select 
 	ClaimBillId,
 	-18 as  BATCHID,
-	BillNumber = /*'AR' +*/ [Bill_ID] + '-01',
+	BillNumber = /*'AR' +*/ [BillNumber] + '-01',
 	ClaimId,
-	ClientRecvdDate = /*null*/[ClientRecievedDate],
+	ClientRecvdDate = /*null*/[BrReceivedDate],
 	InsertedBy = 'mm',
-	Entry_Date = [BillDate],
+	Entry_Date = [Provider_Bill_Date],
 							--Claim_Number, 
-	Charge = convert(money, [Charges]),
-	Allowance = convert(money, [Final_Allowance]), 
+	--Charge = convert(money, [Charges]), -- ??? missing Charges, Allowed in TempBillHeader
+	--Allowance = convert(money, [Allowed]), 
 							--ICD9Code, 
 							--BillTypeCode, 
-	FirstDateofService = DosFrom, 
-	LastDateofService = DosTo,
+	FirstDateofService = DateOfServiceFrom, 
+	LastDateofService = DateOfServiceTo,
 							--DateOfBill, 
 							--DateCorVelRecBill,  
 							-- ReferringPhysicianName, 
 							-- TaxID, Provider_Name, 
 	Provider_ID = -1,
-	Provider = left([Provider_Tax_ID],9),
-	EdiSourceControlNumber = [Bill_ID], 
-	SourceClaim_Number	= b.Claim_Id,
-	SourceProviderName	= left(b.[Provider_Last_Name] + ' '+ b.[Provider_First_Name],80),
-	SourceProviderPracticeName	= left(b.[Provider_Last_Name] + ' '+ b.[Provider_First_Name], 60),
-	SourceProviderAddress = left(rtrim(rtrim(b.[Provider_Address_1]) + ' ' + isnull([Provider_Address_2], '')), 50),
-	SourceProviderCity  = left(b.[Provider_City], 50),
-	SourceProviderState	= left(b.[Provider_State], 2),
-	SourceProviderZip	= left(b.[Provider_Zip_Code],5),
-	SourceProviderTaxId	= left([Provider_Tax_ID],9),
+	Provider = left([ProviderTaxID],9),
+	EdiSourceControlNumber = [BillNumber], 
+	SourceClaim_Number	= b.ClaimNumber,
+	SourceProviderName	= left(b.[ProviderLastName] + ' '+ b.[ProviderFirstName],80),
+	SourceProviderPracticeName	= left(b.[ProviderLastName] + ' '+ b.[ProviderFirstName], 60),
+	SourceProviderAddress = left(rtrim(rtrim(b.[ProviderAddress1]) + ' ' + isnull([ProviderAddress2], '')), 50),
+	SourceProviderCity  = left(b.[ProviderCity], 50),
+	SourceProviderState	= left(b.[ProviderState], 2),
+	SourceProviderZip	= left(b.[ProviderZipCode],5),
+	SourceProviderTaxId	= left([ProviderTaxID],9),
 	ProviderCheckNumber = null,
 	ProviderCheckDate = null,
-	ProviderCheckAmount = [Final_Allowance],
+	--ProviderCheckAmount = [Allowed], -- ??? missing data
 	AttachmentInfo = null,
 	Is_Duplicate = 0,
-	ReviewedState = [Review_State_Bill],
+	ReviewedState = [ReviewedState],
 	Patient_Account = null
 --into _Temp
 From
 	TempBillHeader b					
 where ISNULL(missingData,0) = 0
 and b.claimbillid not in (select id from [QA_INTM_ReviewWare]..claim_Bill cb)
-and /*'AR' +*/ [Bill_ID] + '-01' not in (select accountnumber from [QA_INTM_ReviewWare]..claim_bill where accountnumber like 'GSRMA%')
+and /*'AR' +*/ [BillNumber] + '-01' not in (select accountnumber from [QA_INTM_ReviewWare]..claim_bill where accountnumber like 'GSRMA%')
 ;
 
 
@@ -106,5 +106,9 @@ set identity_insert [QA_INTM_ReviewWare]..CLAIM_BILL OFF;
 
 --update statistics [QA_INTM_ReviewWare]..claim_bill;
 
-commit
-rollback
+IF @@ERROR = 0  
+    COMMIT;  
+ELSE  
+    ROLLBACK;
+
+select * from [QA_INTM_ReviewWare]..CLAIM_BILL where Batch_ID = -18;

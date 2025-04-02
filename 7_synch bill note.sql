@@ -9,8 +9,8 @@ with cte (BillId, Note) as
 Select
 ClaimBillId,
 Note = 
-'BillType: ' + isnull(convert(varchar,[Bill_Type_Code], 101), '') + '
-PPO Network: ' + isnull([PPO_ID], '') 
+'BillType: ' + isnull(convert(varchar,[BillTypeCode], 101), '') + '
+PPO Network: ' + isnull([PpoNetwork], '') 
 From
 	TempBillHeader where ISNULL(missingdata,0) = 0				
 	and claimbillid in (select id from [QA_INTM_ReviewWare]..claim_bill)
@@ -39,8 +39,8 @@ from [QA_INTM_ReviewWare]..claim_bill_line cbl
 
 commit
 	
-select COUNT(*) from vwSJHeader;
-select * from vwSJHeaderDetail;
+select COUNT(*) from TempBillHeader;
+select * from TempBillDetail;
 
 
 select 

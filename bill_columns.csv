@@ -87,3 +87,4 @@ Bill Type Code,3,DV,"Valid Bill Type code.  See Appendix VI",2258,2260
 IPOP Flag,2,DV,"IP - Inpatient billing OP - Outpatient billing {space filled} - non-facility billing",1163,1164
 Discharge Status,2,DV,"Valid Hospital Discharge Status code.",2262,2263
 Patient Account ID,20,AN,"Provider's patient account identifier",2315,2334
+Review Reduction Code 01,2,DV,"First Reduction Reason Code applied to this detail line.",163,164

@@ -36,29 +36,29 @@ insert into [QA_INTM_ReviewWare]..CLAIM_BILL_LINE
 	,ppodiscount
 )
 select
-	bl.[Bill_ID] + convert(varchar,[Bill_ID_Sequence_ID])
+	bl.[BillNumber] + convert(varchar,[BillIDSequenceID])
 	,b.claimbillid
-	,convert(int,[Bill_ID_Sequence_ID])--LineNumber
-	,[Date_of_Service]
-	,left([Original_Procedure_Code],11)
-	,[Original_Procedure_Code]
-	,[Modifier_1]
+	,convert(int,[BillIDSequenceID])--LineNumber
+	,[DateofService]
+	,left([Billed_Code],11)
+	,[Billed_Code]
+	,[Modifier1]
 	,[Modifier2]
-	,Units = convert(money,[Quantity_of_service])
+	,Units = convert(money,[Units])
 	,convert(money,bl.[Charges])
-	,convert(money,[Allowance])
+	,convert(money,[Allowed])
 	,PlaceOfServiceCode = null
 	,null
 	,null
-	,[Review_Reduction_Code_01]
-	,convert(money,bl.[PPOSavings])+convert(money,[Allowance])
-	,convert(money,bl.[PPOSavings])+convert(money,[Allowance])
-	,left(bl.[ICD9_code_1] ,10)
+	,[ReviewReductionCode01]
+	,convert(money,bl.[PPODiscount])+convert(money,[Allowed])
+	,convert(money,bl.[PPODiscount])+convert(money,[Allowed])
+	,left(bl.[ICD9code1] ,10)
 	,DaysSupplied = null
-	,convert(money,bl.[PPOSavings])
+	,convert(money,bl.[PPODiscount])
 From TempBillDetail bl
 Join
-	SJHeader b on b.[Bill_ID] = bl.[Bill_ID]  and isnull(missingdata,0)=0
+	TempBillHeader b on b.[BillNumber] = bl.[BillNumber]  and isnull(missingdata,0)=0
 where ISNULL(missingData,0) = 0
 and b.claimbillid in (select id from [QA_INTM_ReviewWare]..claim_bill)
 ;
