@@ -1,3 +1,6 @@
+USE [QA_INTM_Temp4Dts]
+GO
+
 -- ===================
 -- Generate BILL NOTE
 -- ===================
@@ -18,17 +21,19 @@ From
 insert into [QA_INTM_ReviewWare]..Claim_Bill_Note (ID, Date, Claim_Bill_ID, IsLocked, Notes, UUID)
 select BillId, GETDATE(), BillId, 1, Note, 'dbo' from cte
 
-commit;
-rollback;
+IF @@ERROR = 0  
+    COMMIT;  
+ELSE  
+    ROLLBACK;
 
 -- VALIDATING DATA
 select top 1000 c.client_ID, c.claimno, cb.* from [QA_INTM_ReviewWare]..claim_bill cb
 	join [QA_INTM_ReviewWare]..CLAIM c on c.ID = cb.claim_id
-	where batch_ID = -1;
+	where batch_ID = -18;
 	
 select top 1000 cbl.* from [QA_INTM_ReviewWare]..claim_bill_line cbl
 	join [QA_INTM_ReviewWare]..CLAIM_BILL cb on cb.ID = cbl.Claim_Bill_ID
-	where Batch_ID = -11
+	where Batch_ID = -18
 
 begin transaction	
 update [QA_INTM_ReviewWare]..claim_bill_line set units = units / 100
