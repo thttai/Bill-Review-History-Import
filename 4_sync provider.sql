@@ -37,7 +37,7 @@ FROM [vwMedataLawaBillHeader];
 --select  min(id)-1 from [2CS_CompWare3]..claim_bill;
 
 alter table TempBillHeader add MissingData bit, BrTaxId varchar(20), ClaimId int, ClaimBillId int identity(-1100225,-1);
-
+alter table TempBillHeader add TotalCharges decimal(18,2), TotalAllowed decimal(18,2);
 
 ---- debug
 --select claimno from claim;
@@ -115,7 +115,8 @@ end
 
 
 -- debug
-select top 10 * from CorvelProvider
+-- select top 10 * from CorvelProvider
+-- delete from CorvelProvider
 
 -- insert into CorvelProvider
 begin transaction

@@ -4,7 +4,7 @@ GO
 -- select count(*) from Medata_EXTRACT;
 
 -- drop view
---if OBJECT_ID('[viewMedataSiaLwpBillDetail]') > 0 drop view [viewMedataSiaLwpBillDetail]; 
+-- if OBJECT_ID('[vwMedataLawaBillDetail]') > 0 drop view [vwMedataLawaBillDetail]; 
 
 CREATE View [dbo].[vwMedataLawaBillDetail] as
 with cte(Value) as (
@@ -14,7 +14,7 @@ with cte(Value) as (
 )
 select --top 100
     DateofService        =    case when isdate(TRIM(SUBSTRING(Value, 9, 8))) = 1 then convert(datetime,TRIM(SUBSTRING(Value, 9, 8)))    else null end	-- Date of Service,8,DT,No description available,9,16
-    ,CptCode            =    left(replace(TRIM(SUBSTRING(Value, 17, 17)),'-',''),11)	-- Procedure Code or Service Code,17,AN,"Valid CPT NDC or Fee Schedule code",017,033
+    ,CptCode            =    replace(TRIM(SUBSTRING(Value, 17, 17)),'-','')	-- Procedure Code or Service Code,17,AN,"Valid CPT NDC or Fee Schedule code",017,033
     ,Modifier1            =    case when TRIM(SUBSTRING(Value, 34, 2)) = '00' then null else TRIM(SUBSTRING(Value, 34, 2)) end	-- Modifier 1,2,AN,Valid modifier for state and type.,34,35
     ,Modifier2            =    case when TRIM(SUBSTRING(Value, 36, 2)) = '00' then null else TRIM(SUBSTRING(Value, 36, 2)) end	-- Modifier 2,2,AN,Valid modifier for state and type.,36,37
 
@@ -26,7 +26,7 @@ select --top 100
     ,PPODiscount        =    TRIM(SUBSTRING(Value, 229, 12))	-- PPO Reduction,12,SN9.2,,229,240
     ,Billed_Code        =    replace(TRIM(SUBSTRING(Value, 2361, 17)),'-','')	-- Original Procedure Code,17,AN,"Original submitted procedure code",2361,2377
     ,RevenueCode        =    TRIM(SUBSTRING(Value, 2735, 4))	-- UB Revenue Code,4,DV,"Hospital's UB Revenue Code",2735,2738
-    ,BillNumber        = left(TRIM(SUBSTRING(Value, 1, 8)),16)	-- Bill ID Date,8,DT,"Calendar Date of the Bill ID, or the date the bill was first entered and reviewed",1,8
+    ,BillNumber        = 	TRIM(SUBSTRING(Value, 360, 22))	-- Bill ID,22,AN,"System Assigned Bill Review Identifier, Format: {CCYYMMDDHHmmSShh}{User}{Suffix}",360,381
     ,ClaimNumber        =    TRIM(SUBSTRING(Value, 241, 30))	-- Claim ID,30,AN,No description available,241,270
     ,Line_Sequence_no    =    convert(bigint,TRIM(SUBSTRING(Value, 2520, 10)))	-- Customer Line Number,10,N10,"Medata Customer's Detail Line Number corresponding to 'Medata Customer's Bill ID'   in position 2331 above.",2520,2529
     ,BillIDSequenceID = TRIM(SUBSTRING(Value, 2196, 6))	-- Bill ID Sequence ID,6,N6,Sequential number for each detail line,2196,2201
@@ -44,7 +44,7 @@ select BillNumber, ClaimNumber, count(*) from [dbo].[vwMedataLawaBillDetail] gro
 -- select top 100 * from [dbo].[vwMedataLawaBillDetail];
 
 
--- if OBJECT_ID('[viewMedataSiaLwpBillHeader]') > 0 drop view [viewMedataSiaLwpBillHeader]; 
+-- if OBJECT_ID('[vwMedataLawaBillHeader]') > 0 drop view [vwMedataLawaBillHeader]; 
 GO
 
 CREATE View [vwMedataLawaBillHeader] as
@@ -59,7 +59,7 @@ Select distinct --top 10
     --,PlaceOfService    =    rtrim(POS)
     
     ,ClaimNumber        =    TRIM(SUBSTRING(Value, 241, 30))	-- Claim ID,30,AN,No description available,241,270
-    ,BillNumber        = left(TRIM(SUBSTRING(Value, 1, 8)),16)	-- Bill ID Date,8,DT,"Calendar Date of the Bill ID, or the date the bill was first entered and reviewed",1,8
+    ,BillNumber        = TRIM(SUBSTRING(Value, 360, 22))	-- Bill ID,22,AN,"System Assigned Bill Review Identifier, Format: {CCYYMMDDHHmmSShh}{User}{Suffix}",360,381
     ,ICD9code1        = TRIM(SUBSTRING(Value, 382, 6))	-- ICD9 code 1,6,DV,First Valid ICD-9 code,382,387
     ,ICD9code2        = TRIM(SUBSTRING(Value, 388, 6))	-- ICD9 code 2,6,DV,Second Valid ICD-9 code,388,393
     ,ICD9code3        = TRIM(SUBSTRING(Value, 394, 6))	-- ICD9 code 3,6,DV,Third Valid ICD9-9 code,394,399
@@ -77,7 +77,7 @@ Select distinct --top 10
     ,ProviderAddress2        = TRIM(SUBSTRING(Value, 576, 30))	-- Provider Address 2,30,AN,No description available,576,605
     ,ProviderCity        = TRIM(SUBSTRING(Value, 606, 20))	-- Provider City,20,AN,No description available,606,625
     ,ProviderState        = TRIM(SUBSTRING(Value, 626, 2))	-- Provider State,2,DV,No description available,626,627
-    ,ProviderZipCode    =    LEFT(TRIM(SUBSTRING(Value, 628, 10)), 5)	-- Provider Zip Code,10,AN,No description available,628,637
+    ,ProviderZipCode    =    TRIM(SUBSTRING(Value, 628, 10))	-- Provider Zip Code,10,AN,No description available,628,637
     ,ReviewedState = TRIM(SUBSTRING(Value, 927, 2))	-- Review State Claim,2,DV,"Valid 2 character Postal State code (i.e. CA) presently set in bill review's Claim.",927,928
     ,AdjustmentReasonCode    = case when TRIM(SUBSTRING(Value, 1737, 3)) in ('000') then null else TRIM(SUBSTRING(Value, 1737, 3)) end	-- Adjustment Reason Code,3,DV,"derived from customer's Adjustment Reason Code file utilized at time of performing Adjust A Bill",1737,1739
     ,UB92_Billed_DRG_No        = case when TRIM(SUBSTRING(Value, 1740, 3)) in ('000') then null else TRIM(SUBSTRING(Value, 1740, 3)) end    -- DRG Code,3,N3,"DRG Code used in reviewing Hospital bill",1740,1742
@@ -95,7 +95,7 @@ Select distinct --top 10
     ,ClaimantDateofBirth = convert(datetime,TRIM(SUBSTRING(Value, 341, 8)))	-- Claimant Date of Birth,8,DT,No description available,341,348
 From cte;
 
--- select count(*) from [dbo].[vwMedataLawaBillHeader];
+select count(*) from [dbo].[vwMedataLawaBillHeader];
 -- select top 100 * from [dbo].[vwMedataLawaBillHeader];
 -- -- check if there is any field of first 10 rows does equal between viewMedataSiaLwpBillHeader and vwMedataLawaBillHeader
 -- with h1 as (select top 10 * from [viewMedataSiaLwpBillHeader]), h2 as (select top 10 * from [vwMedataLawaBillHeader])
