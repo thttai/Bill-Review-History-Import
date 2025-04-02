@@ -22,14 +22,17 @@ SELECT *
 INTO TempBillDetail
 FROM [viewMedataSiaLwpBillDetail];
 
+if OBJECT_ID('TempBillHeader') > 0 drop table TempBillHeader;
 SELECT *
 INTO TempBillHeader
 FROM [viewMedataSiaLwpBillHeader];
 
 -- debug
---select top 1 * from TempBillDetail;
---select top 1 * from TempBillHeader;
---select ClaimNumber, RIGHT(claimnumber,6), SUBSTRING(claimnumber,7, len(claimnumber) - 5) from TempBillHeader ;
+select count(*) from viewMedataSiaLwpBillDetail;
+select count(*) from TempBillDetail;
+select count(*) from viewMedataSiaLwpBillHeader;
+select count(*) from TempBillHeader;
+select ClaimNumber, RIGHT(claimnumber,6), SUBSTRING(claimnumber,7, len(claimnumber) - 5) from TempBillHeader ;
 
 -- get min claim build id
 --select  min(id)-1 from [2CS_CompWare3]..claim_bill;

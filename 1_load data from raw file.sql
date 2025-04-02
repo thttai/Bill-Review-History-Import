@@ -1,9 +1,5 @@
-USE [MyLocalDB]
+USE [QA_INTM_Temp4Dts]
 GO
-
--- Configuration
--- Define source system identifier and file paths for column definitions and bill data
-DECLARE @Source VARCHAR(10) = 'LAWA';             -- Source system identifier
 
 -- Drop views in dependency order
 -- Remove existing views to ensure clean import process
@@ -54,11 +50,12 @@ GO
 --==============================================================================
 
 -- Map staged data to final table with proper field mappings
-DELETE FROM TempBillColumns where Source = @Source;
+DELETE FROM TempBillColumns where Source = 'LAWA';
 INSERT INTO TempBillColumns (FieldName, Length, DataType, UsageDescription, StartOffset, EndOffset, Source)
-SELECT FieldName, Length, Attribute, Usage, StartByte, EndByte, @Source
+SELECT FieldName, Length, Attribute, Usage, StartByte, EndByte, 'LAWA'
 FROM bill_columns;
 
+select * from TempBillColumns;
 --==============================================================================
 -- Import Bill Data
 --==============================================================================
@@ -66,11 +63,13 @@ FROM bill_columns;
 -- Transfer valid data to final table
 
 INSERT INTO TempBillLineData (Value)
-SELECT RawLineData
-FROM BIG_EXTRACT_20170401-20250228_byclmlst
-WHERE LEN(RTRIM(RawLineData)) > 0;              -- Skip empty lines
+SELECT [Column 0]
+FROM [BIG_EXTRACT_20170401-20250228_byclmlst]
+WHERE LEN(RTRIM([Column 0])) > 0;              -- Skip empty lines
 
 GO
+
+select top 1 * from TempBillLineData;
 
 --==============================================================================
 -- Create Views
@@ -135,9 +134,6 @@ GROUP BY LineID;
 EXEC sp_executesql @sql;
 GO
 
-DROP VIEW vw_BillLinesParsed;
-GO
-
 --==============================================================================
 -- Verification
 --==============================================================================
@@ -148,6 +144,6 @@ WHERE object_id = OBJECT_ID('Medata_EXTRACT')
 ORDER BY column_id;
 
 -- Preview parsed data
-SELECT TOP 5 * FROM Medata_EXTRACT where CustomerLineNumber = '2702735983';
+SELECT TOP 5 ReviewReductionCode01 FROM Medata_EXTRACT;
 
 select count(*) from Medata_EXTRACT;

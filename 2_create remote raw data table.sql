@@ -6,7 +6,6 @@ GO
 -- drop view
 --if OBJECT_ID('[viewMedataSiaLwpBillDetail]') > 0 drop view [viewMedataSiaLwpBillDetail]; 
 
-GO
 CREATE View [dbo].[viewMedataSiaLwpBillDetail] as
 select --top 100
     DateofService        =    case when isdate(DateofService) = 1 then convert(datetime,DateofService)    else null end
@@ -37,9 +36,9 @@ select --top 100
 from
     Medata_EXTRACT
 
---if OBJECT_ID('[viewMedataSiaLwpBillHeader]') > 0 drop view [viewMedataSiaLwpBillHeader]; 
+-- if OBJECT_ID('[viewMedataSiaLwpBillHeader]') > 0 drop view [viewMedataSiaLwpBillHeader]; 
 GO
-CREATE View [dbo].[viewMedataSiaLwpBillHeader] as (
+CREATE View [viewMedataSiaLwpBillHeader] as
 Select distinct --top 10
     BillDateInserted    =    convert(Datetime,BillIDDate)
 
@@ -68,9 +67,9 @@ Select distinct --top 10
     ,ReviewedState = RTRIM([ReviewStateClaim])
     ,AdjustmentReasonCode    = case when AdjustmentReasonCode in ('000') then null else AdjustmentReasonCode end
     ,UB92_Billed_DRG_No        = case when DRGCode in ('000') then null else DRGCode end    
-    ,UB92_Admit_Date        =    case when ISDATE(AdmissionDate) = 1 then convert(datetime,AdmissionDate) else null end
-    ,DateOfServiceFrom        =    case when ISDATE(BOSDate) = 1 then convert(datetime,BOSDate) else null end
-    ,DateOfServiceTo        =    case when ISDATE(EOSDate) = 1 then convert(datetime,EOSDate) else null end
+    ,UB92_Admit_Date        =    case when convert(int,AdmissionDate) > 0 then convert(datetime,AdmissionDate) else null end
+    ,DateOfServiceFrom        =    case when convert(int,BOSDate) > 0 then convert(datetime,BOSDate) else null end
+    ,DateOfServiceTo        =    case when convert(int,EOSDate) > 0 then convert(datetime,EOSDate) else null end
     ,BillTypeCode            =    BillTypeCode    -- select distinct BillTypeCode from meddatacwall
     --,HospitalBillFlag            -- select distinct HospitalBillFlag from meddatacwall
     ,FormType                =    case when [IPOPFlag] in ('IP', 'OP') then 'UB04' else 'HCFA' end
@@ -81,5 +80,9 @@ Select distinct --top 10
     ,ClaimantDateofInjury = convert(datetime,ClaimantDateofInjury)
     ,ClaimantDateofBirth = convert(datetime,ClaimantDateofBirth)
 From
-    Medata_EXTRACT
-)
+    Medata_EXTRACT;
+
+select top 100 datebilled, DateReceived1, DatePaid, AdmissionDate, BOSDate, EOSDate from Medata_EXTRACT;
+select top 10 convert(int,datebilled), convert(int,DateReceived1), convert(int,DatePaid), convert(int,AdmissionDate), case when convert(int,BOSDate) > 0 then convert(datetime,BOSDate) else null end, convert(int,EOSDate) from Medata_EXTRACT;
+select top 10 Provider_Bill_Date, BrReceivedDate, ProviderCheckDate, UB92_Admit_Date, DateOfServiceFrom, DateOfServiceTo from [viewMedataSiaLwpBillHeader];
+select top 10 count(*) from TempBillHeader;
