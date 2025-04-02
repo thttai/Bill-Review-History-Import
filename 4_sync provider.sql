@@ -8,10 +8,10 @@ USE [QA_INTM_Temp4Dts]
 GO
 
 -- debug
---select top 10 * from [viewMedataSiaLwpBillDetail];
---select top 10 * from [viewMedataSiaLwpBillHeader];
---select count(*) from [viewMedataSiaLwpBillDetail];
---select count(*) from [viewMedataSiaLwpBillHeader];
+--select top 10 * from [vwMedataLawaBillDetail];
+--select top 10 * from [vwMedataLawaBillHeader];
+--select count(*) from [vwMedataLawaBillDetail];
+--select count(*) from [vwMedataLawaBillHeader];
 
 
 if OBJECT_ID('TempBillHeader') > 0 drop table TempBillHeader; 
@@ -20,19 +20,18 @@ if OBJECT_ID('TempBillDetail') > 0 drop table TempBillDetail;
 -- create tables from views
 SELECT *
 INTO TempBillDetail
-FROM [viewMedataSiaLwpBillDetail];
+FROM [vwMedataLawaBillDetail];
 
-if OBJECT_ID('TempBillHeader') > 0 drop table TempBillHeader;
 SELECT *
 INTO TempBillHeader
-FROM [viewMedataSiaLwpBillHeader];
+FROM [vwMedataLawaBillHeader];
 
 -- debug
-select count(*) from viewMedataSiaLwpBillDetail;
-select count(*) from TempBillDetail;
-select count(*) from viewMedataSiaLwpBillHeader;
-select count(*) from TempBillHeader;
-select ClaimNumber, RIGHT(claimnumber,6), SUBSTRING(claimnumber,7, len(claimnumber) - 5) from TempBillHeader ;
+-- select count(*) from vwMedataLawaBillDetail;
+-- select count(*) from TempBillDetail;
+-- select count(*) from vwMedataLawaBillHeader;
+-- select count(*) from TempBillHeader;
+-- select top 1000 ClaimNumber, RIGHT(claimnumber,6), SUBSTRING(claimnumber,7, len(claimnumber) - 5) from TempBillHeader ;
 
 -- get min claim build id
 --select  min(id)-1 from [2CS_CompWare3]..claim_bill;
@@ -108,11 +107,12 @@ create table CorvelProvider (
 	BrPostFixTaxId VARCHAR(100),
 	IsNew INT DEFAULT 1,
 );
-end
-
 -- Create index after table creation
 CREATE INDEX IX1_CorvelProvider 
 ON dbo.CorvelProvider (ProviderName, PracticeAddress, TaxId);
+end
+
+
 
 -- debug
 select top 10 * from CorvelProvider
@@ -161,7 +161,7 @@ with cte (id, taxid, TaxidCounter) as
 ( 
 select ID, TaxID, row_number() over (partition by taxid order by id) from CorvelProvider where isnew = 1
 ) 
- update CorvelProvider set 
+update CorvelProvider set 
 -- select *,
 	BrPostFixTaxId = right('000' + convert(varchar,convert(int,BrPostFixTaxId) + cte.TaxIdCounter - 1),4)
 from CorvelProvider p
@@ -179,6 +179,28 @@ where isnew = 1
 
 --select top 10 ID, StateLicenseNo, PracticeName, PracticeName, BillingAddress1, BillingCity, BillingState, BillingZip, ContactAddress1, ContactCity, ContactState, ContactZip, TaxId from PROVIDER;
 --select providerNAme, ProviderLicenseNumber, TaxId, isnew from CorvelProvider;
+
+-- debug: create table PROVIDER
+-- if OBJECT_ID('dbo.PROVIDER', 'U') IS NULL
+-- begin
+-- create table PROVIDER (
+--     ID INT IDENTITY PRIMARY KEY,      -- Unique identifier
+--     StateLicenseNo VARCHAR(10),       -- State License Number
+--     PracticeName VARCHAR(160),        -- Practice Name
+--     BillingAddress1 VARCHAR(50),      -- Billing Address 1
+--     BillingCity VARCHAR(15),          -- Billing City
+--     BillingState VARCHAR(2),          -- Billing State
+--     BillingZip VARCHAR(5),            -- Billing Zip
+--     ContactAddress1 VARCHAR(50),      -- Contact Address 1
+--     ContactCity VARCHAR(15),          -- Contact City
+--     ContactState VARCHAR(2),          -- Contact State
+--     ContactZip VARCHAR(5),            -- Contact Zip
+--     TaxId VARCHAR(17),                -- Federal Tax ID (with postfix)
+--     Status INT,                       -- Status (0 = Inactive, 1 = Active, 9 = New)
+--     SameAsContact INT,                -- Same as Contact (0 = No, 1 = Yes)
+-- );
+-- end
+
 
 BEGIN TRANSACTION;
 ALTER TABLE PROVIDER DISABLE TRIGGER ALL;
