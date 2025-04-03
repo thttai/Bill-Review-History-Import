@@ -27,6 +27,48 @@ ELSE
     ROLLBACK;
 
 -- VALIDATING DATA
+declare @BatchId int = -18;
+with cteTemp as (
+select 
+    BillNumber, Allowed = sum(convert(decimal(18,2),allowed)) from [qa_intm_temp4dts].[dbo].[TempBillDetail]
+group by BillNumber
+)
+,cteBill as (
+select 
+    BillNumber=accountnumber, edi_source_control_number, totalAllowed from QA_INTM_REVIEWWARE..CLAIM_BILL (nolock) where batch_id = @BatchId
+)
+,cteBillLine as (
+select 
+    BillNumber=accountnumber, cb.edi_source_control_number, totalAllowed = sum(finalallowance)
+from 
+    QA_INTM_REVIEWWARE..CLAIM_BILL cb (nolock) 
+join 
+    QA_INTM_REVIEWWARE..CLAIM_BILL_LINE cbl (nolock) on cbl.claim_bill_id = cb.id
+where 
+    batch_id = @BatchId
+group by 
+    accountnumber, cb.edi_source_control_number
+)
+select 
+    t.BillNumber
+    ,TempAllow = t.Allowed
+    ,BillAllow = b.TotalAllowed
+    ,BillLineAllow = bl.TotalAllowed
+From
+    cteTemp t
+left Join
+    cteBill b on b.Edi_Source_Control_Number = t.BillNumber
+Left Join
+    cteBillLine bl on bl.edi_source_control_number = t.BillNumber
+WHERE 
+    t.Allowed != b.totalAllowed 
+    OR t.Allowed != bl.totalAllowed 
+    OR b.totalAllowed != bl.totalAllowed
+Order by
+    b.BillNumber
+
+
+
 select top 1000 c.client_ID, c.claimno, cb.* from [QA_INTM_ReviewWare]..claim_bill cb
 	join [QA_INTM_ReviewWare]..CLAIM c on c.ID = cb.claim_id
 	where batch_ID = -18;
@@ -43,17 +85,6 @@ from [QA_INTM_ReviewWare]..claim_bill_line cbl
 
 
 commit
-	
-select COUNT(*) from TempBillHeader;
-select * from TempBillDetail;
-
-
-select 
-Claim_Number, Claimant_Name, Review_Number, SSN, DateOfBirth, Injury_Date, Charge, Allowance, ICD9Code, BillTypeCode, FirstDateofService, LastDateofService, InsurerRecDate, DateOfBill, DateCorVelRecBill, DateCorVelEnteredBill, ReferringPhysicianName, TaxID, Provider_Name, Billing_Provider_Address1, PracticeCity, PracticeState, Billing_Provider_Zip
-from TempBillHeader where missingdata=1
-
-
-
 
 -- ARCHIVE IMPORTED TABLE
 
