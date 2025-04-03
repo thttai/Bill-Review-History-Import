@@ -8,14 +8,16 @@ GO
 select id, Client_ID, Employer_ID,  Status, Document_Reference from [QA_INTM_ReviewWare]..batch where ID < 0
 select * from [QA_INTM_ReviewWare]..Client where EDI_Filter_Source_Code like 'INTMINTC'  
 
--- delete from [QA_INTM_ReviewWare]..Claim_Bill_Ext where Claim_Bill_ID in (select ID from [QA_INTM_ReviewWare]..CLAIM_BILL where Batch_ID = -18);
--- delete from [QA_INTM_ReviewWare]..CLAIM_BILL where Batch_ID = -18;
--- delete from [QA_INTM_ReviewWare]..BATCH where id = -18;
+DECLARE @BatchId int = -18;
+
+-- delete from [QA_INTM_ReviewWare]..Claim_Bill_Ext where Claim_Bill_ID in (select ID from [QA_INTM_ReviewWare]..CLAIM_BILL where Batch_ID = @BatchId);
+-- delete from [QA_INTM_ReviewWare]..CLAIM_BILL where Batch_ID = @BatchId;
+-- delete from [QA_INTM_ReviewWare]..BATCH where id = @BatchId;
 
 
 set identity_insert [QA_INTM_ReviewWare]..BATCH ON;
 Insert into [QA_INTM_ReviewWare]..BATCH (id, Client_ID, Employer_ID,  Status, Document_Reference)
-Select -18, 3, null, 99, 'LAWA history: BIG_EXTRACT_20170401-20250228_byclmlst' where not exists (select * from [QA_INTM_ReviewWare]..batch where ID = -18)
+Select @BatchId, 3, null, 99, 'LAWA history: BIG_EXTRACT_20170401-20250228_byclmlst' where not exists (select * from [QA_INTM_ReviewWare]..batch where ID = @BatchId)
 set identity_insert [QA_INTM_ReviewWare]..BATCH OFF;
 
 
@@ -51,7 +53,7 @@ set identity_insert [QA_INTM_ReviewWare]..BATCH OFF;
 -- AttachmentInfo ,
 -- Is_Duplicate ,
 -- ReviewedState,
--- Provider_Patient_Account_Number from [QA_INTM_ReviewWare]..CLAIM_BILL where Batch_ID = -18;
+-- Provider_Patient_Account_Number from [QA_INTM_ReviewWare]..CLAIM_BILL where Batch_ID = @BatchId;
 
 -- select * from TempBillHeader where BillNumber = '20170403';
 -- select AccountNumber, count(*) from [QA_INTM_ReviewWare]..CLAIM_BILL group by AccountNumber having count(*) > 1;
@@ -108,7 +110,7 @@ Provider_Patient_Account_Number
 )
 Select 
 	ClaimBillId,
-	-18 as  BATCHID,
+	@BatchId as  BATCHID,
 	BillNumber = /*'AR' +*/ b.[BillNumber] + '-01',
 	ClaimId,
 	ClientRecvdDate = /*null*/[BrReceivedDate],
@@ -167,4 +169,4 @@ IF @@ERROR = 0
 ELSE  
     ROLLBACK;
 
--- select * from [QA_INTM_ReviewWare]..CLAIM_BILL where Batch_ID = -18;
+-- select * from [QA_INTM_ReviewWare]..CLAIM_BILL where Batch_ID = @BatchId;

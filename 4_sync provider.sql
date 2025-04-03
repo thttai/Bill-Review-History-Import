@@ -8,10 +8,10 @@ USE [QA_INTM_Temp4Dts]
 GO
 
 -- debug
---select top 10 * from [vwMedataLawaBillDetail];
---select top 10 * from [vwMedataLawaBillHeader];
---select count(*) from [vwMedataLawaBillDetail];
---select count(*) from [vwMedataLawaBillHeader];
+--select top 10 * from [vwTempMedataBillDetail];
+--select top 10 * from [vwTempMedataBillHeader];
+--select count(*) from [vwTempMedataBillDetail];
+--select count(*) from [vwTempMedataBillHeader];
 
 
 if OBJECT_ID('TempBillHeader') > 0 drop table TempBillHeader; 
@@ -20,16 +20,16 @@ if OBJECT_ID('TempBillDetail') > 0 drop table TempBillDetail;
 -- create tables from views
 SELECT *
 INTO TempBillDetail
-FROM [vwMedataLawaBillDetail];
+FROM [vwTempMedataBillDetail];
 
 SELECT *
 INTO TempBillHeader
-FROM [vwMedataLawaBillHeader];
+FROM [vwTempMedataBillHeader];
 
 -- debug
--- select count(*) from vwMedataLawaBillDetail;
+-- select count(*) from vwTempMedataBillDetail;
 -- select count(*) from TempBillDetail;
--- select count(*) from vwMedataLawaBillHeader;
+-- select count(*) from vwTempMedataBillHeader;
 -- select count(*) from TempBillHeader;
 -- select top 1000 ClaimNumber, RIGHT(claimnumber,6), SUBSTRING(claimnumber,7, len(claimnumber) - 5) from TempBillHeader ;
 
@@ -37,7 +37,6 @@ FROM [vwMedataLawaBillHeader];
 --select  min(id)-1 from [2CS_CompWare3]..claim_bill;
 
 alter table TempBillHeader add MissingData bit, BrTaxId varchar(20), ClaimId int, ClaimBillId int identity(-1100225,-1);
-alter table TempBillHeader add TotalCharges decimal(18,2), TotalAllowed decimal(18,2);
 
 ---- debug
 --select claimno from claim;
@@ -83,7 +82,6 @@ update TempBillHeader set claimId = '299554';
 select distinct t.ClaimID, t.ClaimantFirstName, t.ClaimantLastName, convert(datetime,t.ClaimantDateofInjury) as DOI
 from 	TempBillHeader t
 where t.ClaimID is null
-
 
 
 ------------------

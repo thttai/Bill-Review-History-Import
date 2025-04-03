@@ -1,42 +1,22 @@
 USE [QA_INTM_Temp4Dts]
 GO
 
--- NOTE: LOAD RAW FILE DATA TO TABLE [BIG_EXTRACT_20170401-20250228_byclmlst] using import wizard
-
+-- NOTE: LOAD RAW FILE DATA TO TABLE [TempMedataData] using import wizard
 
 
 -- FOR DEBUG ONLY
 
+-- vwTempMedataParser - parse all columns from data line w/o trimming
+-- vwTempMedataBillHeader - Select distinct only needed bill headers cols from the vwTempMedataParser with space trim
+-- vwTempMedataBillDetail - Select only needed bill detailcols from the vwTempMedataParser with space trim
+
 -- Drop views in dependency order
 -- Remove existing views to ensure clean import process
-IF OBJECT_ID('Medata_EXTRACT') IS NOT NULL DROP VIEW Medata_EXTRACT;
+IF OBJECT_ID('vwTempMedataParser') IS NOT NULL DROP VIEW vwTempMedataParser;
 IF OBJECT_ID('vw_BillLinesParsed') IS NOT NULL DROP VIEW vw_BillLinesParsed;
+GO
 
 -- Create base tables
--- Define structure for storing column definitions and bill line data
-IF OBJECT_ID('TempBillColumns', 'U') IS NULL
-BEGIN
-    -- TempBillColumns table structure:
-    -- ID: Unique identifier
-    -- FieldName: Field name from column definitions
-    -- StartOffset: Start position of field in fixed-width data (1-based)
-    -- EndOffset: End position of field in fixed-width data
-    -- Length: Field length
-    -- DataType: Data type of field (e.g. DT=Date, AN=AlphaNumeric)
-    -- UsageDescription: Field description
-    -- Source: Source system identifier
-    CREATE TABLE TempBillColumns (
-        ID INT IDENTITY PRIMARY KEY,              -- Unique identifier
-        FieldName NVARCHAR(100),                 -- Field name
-        StartOffset INT,                         -- Start position (1-based)
-        EndOffset INT,                           -- End position
-        Length INT,                              -- Field length
-        DataType NVARCHAR(10),                   -- e.g. DT=Date, AN=AlphaNumeric
-        UsageDescription NVARCHAR(512),          -- Field description
-        Source NVARCHAR(100)                     -- Source system
-    );
-END;
-
 IF OBJECT_ID('TempBillLineData', 'U') IS NOT NULL
 BEGIN
 DROP TABLE TempBillLineData;
@@ -55,13 +35,6 @@ GO
 -- Import Column Definitions
 --==============================================================================
 
--- Map staged data to final table with proper field mappings
-DELETE FROM TempBillColumns where Source = 'LAWA';
-INSERT INTO TempBillColumns (FieldName, Length, DataType, UsageDescription, StartOffset, EndOffset, Source)
-SELECT FieldName, Length, Attribute, Usage, StartByte, EndByte, 'LAWA'
-FROM bill_columns;
-
-select * from TempBillColumns;
 --==============================================================================
 -- Import Bill Data
 --==============================================================================
@@ -70,7 +43,7 @@ select * from TempBillColumns;
 
 INSERT INTO TempBillLineData (Value)
 SELECT [Column 0]
-FROM [BIG_EXTRACT_20170401-20250228_byclmlst]
+FROM [TempMedataData]
 WHERE LEN(RTRIM([Column 0])) > 0;              -- Skip empty lines
 
 GO
@@ -86,12 +59,11 @@ WITH ParsedFields AS (
     SELECT 
         l.ID as LineID,                          -- Line identifier
         TRIM(SUBSTRING(l.Value,                  -- Extract field using positions
-            c.StartOffset, c.Length)) as FieldValue,
+            c.StartByte, c.Length)) as FieldValue,
         c.FieldName,                             -- Field name from definition
-        c.DataType                               -- For data type validation
+        c.Attribute                               -- For data type validation
     FROM dbo.TempBillLineData l
-    CROSS JOIN dbo.TempBillColumns c
-    WHERE c.Source = 'LAWA'                      -- Filter by source system
+    CROSS JOIN dbo.bill_columns c
 )
 SELECT 
     LineID,
@@ -101,7 +73,7 @@ SELECT
 FROM ParsedFields;
 GO
 
--- Medata_EXTRACT: Create final view with proper column names
+-- vwTempMedataParser: Create final view with proper column names
 DECLARE @sql NVARCHAR(MAX);
 DECLARE @columns NVARCHAR(MAX);
 
@@ -111,10 +83,9 @@ WITH NumberedFields AS (
         FieldName,
         ROW_NUMBER() OVER (                      -- Add counter for duplicates
             PARTITION BY REPLACE(REPLACE(REPLACE(FieldName, ' ', '_'), '-', '_'), '/', '_') 
-            ORDER BY StartOffset
+            ORDER BY StartByte
         ) as FieldCount
-    FROM TempBillColumns
-    WHERE Source = 'LAWA'                        -- Filter by source system
+    FROM dbo.bill_columns
 )
 SELECT @columns = STRING_AGG(CAST(
     'MAX(CASE WHEN FieldName = ''' + FieldName + ''' THEN ParsedValue END) as ' + 
@@ -126,10 +97,11 @@ SELECT @columns = STRING_AGG(CAST(
     as varchar(200)),
     ', ')
 FROM NumberedFields;
+GO
 
 -- Create final view with dynamic columns
 SET @sql = N'
-CREATE VIEW Medata_EXTRACT WITH SCHEMABINDING AS
+CREATE VIEW vwTempMedataParser WITH SCHEMABINDING AS
 SELECT 
     LineID,                                      -- Preserve line order
     ' + @columns + '                             -- Dynamic field columns
@@ -140,18 +112,20 @@ GROUP BY LineID;
 EXEC sp_executesql @sql;
 GO
 
+DROP VIEW vw_BillLinesParsed;
+GO
+
 --==============================================================================
 -- Verification
 --==============================================================================
 -- Display column structure
 SELECT name, column_id 
 FROM sys.columns 
-WHERE object_id = OBJECT_ID('Medata_EXTRACT')
+WHERE object_id = OBJECT_ID('vwTempMedataParser')
 ORDER BY column_id;
 
 -- Preview parsed data
-SELECT TOP 5 ReviewReductionCode01 FROM Medata_EXTRACT;
 
-select count(*) from Medata_EXTRACT;
+select count(*) from vwTempMedataParser;
 
-select count(*), BillID from Medata_EXTRACT group by BillID;
+select count(*), BillID from vwTempMedataParser group by BillID;

@@ -106,10 +106,3 @@ IF @@ERROR = 0
     COMMIT;  
 ELSE  
     ROLLBACK;
---select TotalCharges, TotalAllowed,* from [QA_INTM_ReviewWare]..CLAIM_BILL cb (nolock) where ID = -54040
---select COUNT(*) from SJDetail
-
---update statistics [QA_INTM_ReviewWare]..claim_bill_line;
-
-commit;
-rollback

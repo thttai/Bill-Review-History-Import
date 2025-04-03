@@ -1,16 +1,14 @@
 USE [QA_INTM_Temp4Dts]
 GO
 
--- select count(*) from Medata_EXTRACT;
-
 -- drop view
--- if OBJECT_ID('[vwMedataLawaBillDetail]') > 0 drop view [vwMedataLawaBillDetail]; 
+-- if OBJECT_ID('[vwTempMedataBillDetail]') > 0 drop view [vwTempMedataBillDetail]; 
 
-CREATE View [dbo].[vwMedataLawaBillDetail] as
+CREATE View [dbo].[vwTempMedataBillDetail] as
 with cte(Value) as (
     SELECT 
         [Column 0] as Value
-    FROM [BIG_EXTRACT_20170401-20250228_byclmlst]
+    FROM [TempMedataData]
 )
 select --top 100
     DateofService        =    case when isdate(TRIM(SUBSTRING(Value, 9, 8))) = 1 then convert(datetime,TRIM(SUBSTRING(Value, 9, 8)))    else null end	-- Date of Service,8,DT,No description available,9,16
@@ -40,18 +38,16 @@ select --top 100
 --into MedDataBillDetail    
 from cte;
 
-select BillNumber, ClaimNumber, count(*) from [dbo].[vwMedataLawaBillDetail] group by BillNumber, ClaimNumber;
--- select top 100 * from [dbo].[vwMedataLawaBillDetail];
 
 
--- if OBJECT_ID('[vwMedataLawaBillHeader]') > 0 drop view [vwMedataLawaBillHeader]; 
+-- if OBJECT_ID('[vwTempMedataBillHeader]') > 0 drop view [vwTempMedataBillHeader]; 
 GO
 
-CREATE View [vwMedataLawaBillHeader] as
+CREATE View [vwTempMedataBillHeader] as
 with cte(Value) as (
     SELECT 
         [Column 0] as Value
-    FROM [BIG_EXTRACT_20170401-20250228_byclmlst]
+    FROM [TempMedataData]
 )
 Select distinct --top 10
     BillDateInserted    =    convert(Datetime,TRIM(SUBSTRING(Value, 1, 8)))	-- Bill ID Date,8,DT,"Calendar Date of the Bill ID, or the date the bill was first entered and reviewed",1,8
@@ -95,10 +91,10 @@ Select distinct --top 10
     ,ClaimantDateofBirth = convert(datetime,TRIM(SUBSTRING(Value, 341, 8)))	-- Claimant Date of Birth,8,DT,No description available,341,348
 From cte;
 
-select count(*) from [dbo].[vwMedataLawaBillHeader];
--- select top 100 * from [dbo].[vwMedataLawaBillHeader];
--- -- check if there is any field of first 10 rows does equal between viewMedataSiaLwpBillHeader and vwMedataLawaBillHeader
--- with h1 as (select top 10 * from [viewMedataSiaLwpBillHeader]), h2 as (select top 10 * from [vwMedataLawaBillHeader])
+-- select count(*) from [dbo].[vwTempMedataBillHeader];
+-- select top 100 * from [dbo].[vwTempMedataBillHeader];
+-- -- check if there is any field of first 10 rows does equal between viewMedataSiaLwpBillHeader and vwTempMedataBillHeader
+-- with h1 as (select top 10 * from [viewMedataSiaLwpBillHeader]), h2 as (select top 10 * from [vwTempMedataBillHeader])
 -- select
 --     h1.BillDateInserted, h2.BillDateInserted,
 --     h1.ClaimNumber, h2.ClaimNumber,
