@@ -33,56 +33,6 @@ FROM [vwTempMedataBillHeader];
 -- select count(*) from TempBillHeader;
 -- select top 1000 ClaimNumber, RIGHT(claimnumber,6), SUBSTRING(claimnumber,7, len(claimnumber) - 5) from TempBillHeader ;
 
--- get min claim build id
---select  min(id)-1 from [2CS_CompWare3]..claim_bill;
-
-alter table TempBillHeader add MissingData bit, BrTaxId varchar(20), ClaimId int, ClaimBillId int identity(-1100225,-1);
-
----- debug
---select claimno from claim;
---select RIGHT(claimnumber, 7) from TempBillHeader;
----- for debug, fill the last 7 chars of claimnumber of table TempBillHeader to the claimno of Claim table where Edi_Source_Code = 'INTMINTC'
----- for example, TempBillHeader has 1000 records and Claim has 2000 records with Edi_Source_Code = 'INTMINTC', set first 1000 records of claimno to the last 7 chars of claimnumber of TempBillHeader
---WITH TempBillSubset AS (
---    SELECT claimnumber, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
---    FROM TempBillHeader
---),
---ClaimSubset AS (
---    SELECT id, ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS rn
---    FROM claim
---    WHERE Edi_Source_Code = 'INTMINTC'
---)
---UPDATE c
---SET claimno = RIGHT(t.claimnumber, 7)
---FROM claim c
---JOIN ClaimSubset cs ON c.id = cs.id
---JOIN TempBillSubset t ON cs.rn = t.rn;
-
--- debug
---select count(*) from TempBillDetail;
---select count(*) from TempBillHeader;
---select COUNT(DISTINCT claimno) from claim;
---select COUNT(DISTINCT claimnumber) from TempBillHeader;
-
--- debug
---select COUNT(*) from TempBillHeader where claimId is not null;
-
--- find the claim no from claim table and set the id to the TempBillHeader
-update TempBillHeader set -- select distinct claimnumber, claimno,
-	claimId = c.id
-From TempBillHeader b
-join 
-	[QA_INTM_ReviewWare]..[CLAIM] c (nolock) on c.claimno =  RIGHT(claimnumber,7)
-	and c.Edi_Source_Code = 'INTMINTC';
-
--- debug: hardcode the claim id
-update TempBillHeader set claimId = '299554';
-
--- REPORT: get headers miss the claim id
-select distinct t.ClaimID, t.ClaimantFirstName, t.ClaimantLastName, convert(datetime,t.ClaimantDateofInjury) as DOI
-from 	TempBillHeader t
-where t.ClaimID is null
-
 
 ------------------
 -- SYNCH PROVIDER
@@ -110,7 +60,8 @@ CREATE INDEX IX1_CorvelProvider
 ON dbo.CorvelProvider (ProviderName, PracticeAddress, TaxId);
 end
 
-
+-- mark not new for current CorvelProvider
+update CorvelProvider set isnew = 0;
 
 -- debug
 -- select top 10 * from CorvelProvider
@@ -131,7 +82,6 @@ left(h.ProviderZipCode,5) as PracticeZip, left(h.ProviderTaxID,9) as TaxID
 --into CorvelProvider
 from TempBillHeader h 
 left join CorvelProvider p on h.ProviderFirstName + ' ' + h.ProviderLAstNAme = p.providerNAme and h.ProviderAddress1 = p.PracticeAddress and h.ProviderTaxID = p.TaxId
--- where isnull(ClaimId,0) > 0 and p.providername is null
 where p.providername is null
 --order by 1
 select * from corvelprovider where  BrPostFixTaxId is null

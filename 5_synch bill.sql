@@ -4,6 +4,35 @@ GO
 -- =======================================
 -- START SYNCH the BILL DATA
 -- =======================================
+
+-- update claim id
+-- get min claim build id
+--select  min(id)-1 from [INTM_ReviewWare]..claim_bill;
+
+DECLARE @MinClaimId int = -1249937;
+alter table TempBillHeader add MissingData bit, BrTaxId varchar(20), ClaimId int, ClaimBillId int identity(@MinClaimId,-1);
+
+-- debug
+--select COUNT(*) from TempBillHeader where claimId is not null;
+
+-- find the claim no from claim table and set the id to the TempBillHeader
+update TempBillHeader set -- select distinct claimnumber, claimno,
+	claimId = c.id
+From TempBillHeader b
+join
+	[INTM_ReviewWare]..[CLAIM] c (nolock) on c.claimno =  RIGHT(claimnumber,7)
+	and c.Edi_Source_Code = 'INTMINTC';
+
+-- debug: hardcode the claim id
+update TempBillHeader set claimId = '299554';
+
+-- REPORT: get headers miss the claim id
+select distinct t.ClaimID, t.ClaimantFirstName, t.ClaimantLastName, convert(datetime,t.ClaimantDateofInjury) as DOI
+from 	TempBillHeader t
+where t.ClaimID is null
+
+
+
 -- Create BATCH
 select id, Client_ID, Employer_ID,  Status, Document_Reference from [QA_INTM_ReviewWare]..batch where ID < 0
 select * from [QA_INTM_ReviewWare]..Client where EDI_Filter_Source_Code like 'INTMINTC'  
