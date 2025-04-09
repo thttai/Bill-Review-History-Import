@@ -36,11 +36,11 @@ SELECT top 10 EdiSourceControlNumber,
 	,Icd91
 	,RxDaysSupply
 	,ppodiscount
-	From [QA_INTM_ReviewWare]..CLAIM_BILL_LINE order by ID desc;
+	From [INTM_ReviewWare]..CLAIM_BILL_LINE order by ID desc;
 
 begin transaction;
 begin transaction
-insert into [QA_INTM_ReviewWare]..CLAIM_BILL_LINE 
+insert into [INTM_ReviewWare]..CLAIM_BILL_LINE 
 (
 	EdiSourceControlNumber,
 	Claim_Bill_ID,
@@ -100,7 +100,7 @@ From TempBillDetail bl
 Join
 	TempBillHeader b on b.[BillNumber] = bl.[BillNumber]  and isnull(missingdata,0)=0
 where ISNULL(missingData,0) = 0
-and b.claimbillid in (select id from [QA_INTM_ReviewWare]..claim_bill);
+and b.claimbillid in (select id from [INTM_ReviewWare]..claim_bill);
 
 IF @@ERROR = 0  
     COMMIT;  

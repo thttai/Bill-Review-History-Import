@@ -5,7 +5,7 @@ GO
 -- Generate BILL NOTE
 -- ===================
 
--- delete from [QA_INTM_ReviewWare]..CLAIM_BILL_NOTE
+-- delete from [INTM_ReviewWare]..CLAIM_BILL_NOTE
 begin transaction;
 with cte (BillId, Note) as
 (
@@ -16,9 +16,9 @@ Note =
 PPO Network: ' + isnull([PpoNetwork], '') 
 From
 	TempBillHeader where ISNULL(missingdata,0) = 0				
-	and claimbillid in (select id from [QA_INTM_ReviewWare]..claim_bill)
+	and claimbillid in (select id from [INTM_ReviewWare]..claim_bill)
 )
-insert into [QA_INTM_ReviewWare]..Claim_Bill_Note (ID, Date, Claim_Bill_ID, IsLocked, Notes, UUID)
+insert into [INTM_ReviewWare]..Claim_Bill_Note (ID, Date, Claim_Bill_ID, IsLocked, Notes, UUID)
 select BillId, GETDATE(), BillId, 1, Note, 'dbo' from cte
 
 IF @@ERROR = 0  
@@ -35,15 +35,15 @@ group by BillNumber
 )
 ,cteBill as (
 select 
-    BillNumber=accountnumber, edi_source_control_number, totalAllowed from QA_INTM_REVIEWWARE..CLAIM_BILL (nolock) where batch_id = @BatchId
+    BillNumber=accountnumber, edi_source_control_number, totalAllowed from INTM_ReviewWare..CLAIM_BILL (nolock) where batch_id = @BatchId
 )
 ,cteBillLine as (
 select 
     BillNumber=accountnumber, cb.edi_source_control_number, totalAllowed = sum(finalallowance)
 from 
-    QA_INTM_REVIEWWARE..CLAIM_BILL cb (nolock) 
+    INTM_ReviewWare..CLAIM_BILL cb (nolock) 
 join 
-    QA_INTM_REVIEWWARE..CLAIM_BILL_LINE cbl (nolock) on cbl.claim_bill_id = cb.id
+    INTM_ReviewWare..CLAIM_BILL_LINE cbl (nolock) on cbl.claim_bill_id = cb.id
 where 
     batch_id = @BatchId
 group by 
@@ -69,18 +69,18 @@ Order by
 
 
 
-select top 1000 c.client_ID, c.claimno, cb.* from [QA_INTM_ReviewWare]..claim_bill cb
-	join [QA_INTM_ReviewWare]..CLAIM c on c.ID = cb.claim_id
+select top 1000 c.client_ID, c.claimno, cb.* from [INTM_ReviewWare]..claim_bill cb
+	join [INTM_ReviewWare]..CLAIM c on c.ID = cb.claim_id
 	where batch_ID = -18;
 	
-select top 1000 cbl.* from [QA_INTM_ReviewWare]..claim_bill_line cbl
-	join [QA_INTM_ReviewWare]..CLAIM_BILL cb on cb.ID = cbl.Claim_Bill_ID
+select top 1000 cbl.* from [INTM_ReviewWare]..claim_bill_line cbl
+	join [INTM_ReviewWare]..CLAIM_BILL cb on cb.ID = cbl.Claim_Bill_ID
 	where Batch_ID = -18
 
 begin transaction	
-update [QA_INTM_ReviewWare]..claim_bill_line set units = units / 100
-from [QA_INTM_ReviewWare]..claim_bill_line cbl
-	join [QA_INTM_ReviewWare]..CLAIM_BILL cb on cb.ID = cbl.Claim_Bill_ID
+update [INTM_ReviewWare]..claim_bill_line set units = units / 100
+from [INTM_ReviewWare]..claim_bill_line cbl
+	join [INTM_ReviewWare]..CLAIM_BILL cb on cb.ID = cbl.Claim_Bill_ID
 	where Batch_ID in (-9,-10)
 
 

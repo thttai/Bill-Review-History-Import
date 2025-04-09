@@ -20,38 +20,41 @@ update TempBillHeader set -- select distinct claimnumber, claimno,
 	claimId = c.id
 From TempBillHeader b
 join
-	[INTM_ReviewWare]..[CLAIM] c (nolock) on c.claimno =  RIGHT(claimnumber,7)
-	and c.Edi_Source_Code = 'INTMINTC';
+	[INTM_ReviewWare]..[CLAIM] c (nolock) on c.claimno =  claimnumber
+	and c.Edi_Source_Code = 'INTMINTC' and c.employer_id = 712;
 
 -- debug: hardcode the claim id
-update TempBillHeader set claimId = '299554';
+-- update TempBillHeader set claimId = '299554';
 
 -- REPORT: get headers miss the claim id
 select distinct t.ClaimID, t.ClaimantFirstName, t.ClaimantLastName, convert(datetime,t.ClaimantDateofInjury) as DOI
 from 	TempBillHeader t
 where t.ClaimID is null
 
+update TempBillHeader set missingData = 1
+where t.ClaimID is null 
+
 
 
 -- Create BATCH
-select id, Client_ID, Employer_ID,  Status, Document_Reference from [QA_INTM_ReviewWare]..batch where ID < 0
-select * from [QA_INTM_ReviewWare]..Client where EDI_Filter_Source_Code like 'INTMINTC'  
+select id, Client_ID, Employer_ID,  Status, Document_Reference from [INTM_ReviewWare]..batch where ID < 0
+select * from [INTM_ReviewWare]..Client where EDI_Filter_Source_Code like 'INTMINTC'  
 
-DECLARE @BatchId int = -18;
+DECLARE @BatchId int = -25;
 
--- delete from [QA_INTM_ReviewWare]..Claim_Bill_Ext where Claim_Bill_ID in (select ID from [QA_INTM_ReviewWare]..CLAIM_BILL where Batch_ID = @BatchId);
--- delete from [QA_INTM_ReviewWare]..CLAIM_BILL where Batch_ID = @BatchId;
--- delete from [QA_INTM_ReviewWare]..BATCH where id = @BatchId;
+-- delete from [INTM_ReviewWare]..Claim_Bill_Ext where Claim_Bill_ID in (select ID from [INTM_ReviewWare]..CLAIM_BILL where Batch_ID = @BatchId);
+-- delete from [INTM_ReviewWare]..CLAIM_BILL where Batch_ID = @BatchId;
+-- delete from [INTM_ReviewWare]..BATCH where id = @BatchId;
 
 
-set identity_insert [QA_INTM_ReviewWare]..BATCH ON;
-Insert into [QA_INTM_ReviewWare]..BATCH (id, Client_ID, Employer_ID,  Status, Document_Reference)
-Select @BatchId, 3, null, 99, 'LAWA history: BIG_EXTRACT_20170401-20250228_byclmlst' where not exists (select * from [QA_INTM_ReviewWare]..batch where ID = @BatchId)
-set identity_insert [QA_INTM_ReviewWare]..BATCH OFF;
+set identity_insert [INTM_ReviewWare]..BATCH ON;
+Insert into [INTM_ReviewWare]..BATCH (id, Client_ID, Employer_ID,  Status, Document_Reference)
+Select @BatchId, 3, null, 99, 'LAWA history: BIG_EXTRACT_20170401-20250228_byclmlst' where not exists (select * from [INTM_ReviewWare]..batch where ID = @BatchId)
+set identity_insert [INTM_ReviewWare]..BATCH OFF;
 
 
 --update SJHeader set Comment = 'PASIS' from AMLBillHeader h
---join [QA_INTM_ReviewWare]..CLAIM c on c.ID = h.ClaimId 
+--join [INTM_ReviewWare]..CLAIM c on c.ID = h.ClaimId 
 --where c.Client_ID = 61
 
 -- select ID,
@@ -82,10 +85,10 @@ set identity_insert [QA_INTM_ReviewWare]..BATCH OFF;
 -- AttachmentInfo ,
 -- Is_Duplicate ,
 -- ReviewedState,
--- Provider_Patient_Account_Number from [QA_INTM_ReviewWare]..CLAIM_BILL where Batch_ID = @BatchId;
+-- Provider_Patient_Account_Number from [INTM_ReviewWare]..CLAIM_BILL where Batch_ID = @BatchId;
 
 -- select * from TempBillHeader where BillNumber = '20170403';
--- select AccountNumber, count(*) from [QA_INTM_ReviewWare]..CLAIM_BILL group by AccountNumber having count(*) > 1;
+-- select AccountNumber, count(*) from [INTM_ReviewWare]..CLAIM_BILL group by AccountNumber having count(*) > 1;
 
 -- select 
 -- 	BillNumber,
@@ -97,7 +100,7 @@ set identity_insert [QA_INTM_ReviewWare]..BATCH OFF;
 
 -- Create BILL
 begin transaction;
-set identity_insert [QA_INTM_ReviewWare]..CLAIM_BILL ON;
+set identity_insert [INTM_ReviewWare]..CLAIM_BILL ON;
 WITH BillAggregates AS (
     SELECT 
         BillNumber,
@@ -106,7 +109,7 @@ WITH BillAggregates AS (
     FROM TempBillDetail
     GROUP BY BillNumber
 )
-Insert into [QA_INTM_ReviewWare]..CLAIM_BILL (
+Insert into [INTM_ReviewWare]..CLAIM_BILL (
 ID,
 Batch_ID,
 AccountNumber,
@@ -178,24 +181,24 @@ Select
 From
 	TempBillHeader b JOIN BillAggregates ba on b.BillNumber = ba.BillNumber				
 where ISNULL(missingData,0) = 0
-and b.claimbillid not in (select id from [QA_INTM_ReviewWare]..claim_Bill cb)
-and /*'AR' +*/ b.[BillNumber] + '-01' not in (select accountnumber from [QA_INTM_ReviewWare]..claim_bill where accountnumber like 'GSRMA%');
+and b.claimbillid not in (select id from [INTM_ReviewWare]..claim_Bill cb)
+and /*'AR' +*/ b.[BillNumber] + '-01' not in (select accountnumber from [INTM_ReviewWare]..claim_bill where accountnumber like 'GSRMA%');
 
 
 --  select count(*) from AMLBillHeader where isnull(missingdata,0) = 0
 
-insert into [QA_INTM_ReviewWare]..claim_bill_ext (claim_bill_id) 
-select ID from [QA_INTM_ReviewWare]..CLAIM_BILL cb (nolock) 
-where ID not in (select claim_bill_id from [QA_INTM_ReviewWare]..claim_bill_ext);
+insert into [INTM_ReviewWare]..claim_bill_ext (claim_bill_id) 
+select ID from [INTM_ReviewWare]..CLAIM_BILL cb (nolock) 
+where ID not in (select claim_bill_id from [INTM_ReviewWare]..claim_bill_ext);
 	
 	
-set identity_insert [QA_INTM_ReviewWare]..CLAIM_BILL OFF;
+set identity_insert [INTM_ReviewWare]..CLAIM_BILL OFF;
 
---update statistics [QA_INTM_ReviewWare]..claim_bill;
+--update statistics [INTM_ReviewWare]..claim_bill;
 
 IF @@ERROR = 0  
     COMMIT;  
 ELSE  
     ROLLBACK;
 
--- select * from [QA_INTM_ReviewWare]..CLAIM_BILL where Batch_ID = @BatchId;
+-- select * from [INTM_ReviewWare]..CLAIM_BILL where Batch_ID = @BatchId;
